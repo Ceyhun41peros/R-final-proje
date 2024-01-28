@@ -1,0 +1,303 @@
+---
+title: "20211101062_R_FİNAL_"
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+```
+
+```{r}
+library(readxl)
+X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri <- read_excel("7-vdym-ilce-baznda-hanelerin-yllk-tatil-tercihleri.xlsx")
+View(X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri)
+```
+
+Satır- Sutun Sayısı
+
+```{r}
+dim(X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri)
+```
+
+Veri setinde herhangi bir eksik gözlem yoktur.
+
+```{r}
+any(is.na(X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri))
+```
+
+Ümraniye\`de hiç tatil yapmayanlar
+
+```{r}
+ X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri %>% 
+   select(İlçe,`Hiç tatil yapmıyorum`) %>%
+   filter(İlçe=="ÜMRANİYE")
+```
+
+Tatil_yapmayanın_olmadığı_ilçeler
+
+```{r}
+  X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri %>% 
+   select(İlçe,`Hiç tatil yapmıyorum`) %>%
+   filter(`Hiç tatil yapmıyorum`==0)
+```
+
+Özet İstatistikler
+
+```{r}
+summary(X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri)
+
+```
+
+Hiç tatil yapmayan Kişi sayısı
+
+```{r}
+sum(X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri$`Hiç tatil yapmıyorum`)
+```
+
+```{r}
+filtrelenmis_veri <- X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri %>%
+  filter(İlçe %in% c("ÜMRANİYE", "ESENYURT","ÜSKÜDAR","BEŞİKTAŞ","PENDİK"))
+
+grafik <- ggplot(filtrelenmis_veri, aes(x=`Hiç tatil yapmıyorum`, y=İlçe))
+grafik + geom_point()
+```
+
+İlçe sutunu çıkartıldı ve satır toplamları bulundu
+
+```{r}
+a=X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri %>% 
+   select(-İlçe) 
+
+Toplam_d=rowSums(a)
+```
+
+Satır toplamları Toplam sutunu olarak eklendi
+
+```{r}
+a$Toplam<-Toplam_d
+a
+```
+
+Toplam gözlem sayısı bulundu
+
+```{r}
+Top_gözlem<-sum(a$Toplam)
+```
+
+İlçeler sutunu seçilip geri eklendi
+
+```{r}
+ilçeler=X7_vdym_ilce_baznda_hanelerin_yllk_tatil_tercihleri %>% 
+   select(İlçe) 
+ Top.veri <- cbind(ilçeler,a)
+```
+
+İlçelerin toplam içindeki yüzdeleri hesaplandı ve veri setine eklendi
+
+```{r}
+Top.veri$Yüzde<-(Top.veri$Toplam/ Top_gözlem)*100
+View(Top.veri)
+```
+
+```{r}
+ggplot(Top.veri, aes(x = "", y = Yüzde, fill = İlçe)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(fill = "", title = "      İlçelere Göre Toplam Veri Dağılım")
+
+```
+
+Ümraniye ilçesi tatil seçim yüzdesi
+
+```{r}
+UMRANIYE<-(Top.veri[37,2:10]/Top.veri[37,11])*100
+```
+
+Ümraniye için data frame
+
+```{r}
+as.numeric(UMRANIYE[1,])
+
+df <- data.frame(
+  Kategori = c("Hiç tatil yapmıyorum","Kıyı kesimlerinde eğlenceye yönelik tatiller","Doğa ve tabiat tatilleri (Kamp, doğa vb.)
+","Termal/Kaplıca tatilleri
+","Kültürel tatiller (Antik kent, ören yeri, farklı ülke şehir/mutfak kültürleri vb.)
+","Deniz turu tatili (Gemi turu, tekne gezileri vb.)
+","Memleket/akraba tatili
+","Diğer","Evde veya şehir içinde farklı aktiviteler
+"),
+
+  yüzde = c(69.2449355  ,3.8674033 , 1.8416206 , 0.7366483 , 1.2891344,  5.8931860 ,16.9429098 , 0.1841621,  0.0000000)
+)
+```
+
+```{r}
+ggplot(df, aes(x = "", y = yüzde, fill = Kategori)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(fill = "", title = "     ÜMRANİYE İlçesinin Tatil Seçim Dağılımı")
+```
+
+Sancaktepe ilçesi tatil seçim yüzdesi
+
+```{r}
+Sancaktepe<-(Top.veri[29,2:10]/Top.veri[29,11])*100
+```
+
+Sancaktepe için data frame
+
+```{r}
+as.numeric(Sancaktepe[1,])
+
+df2 <- data.frame(
+  Kategori = c("Hiç tatil yapmıyorum","Kıyı kesimlerinde eğlenceye yönelik tatiller","Doğa ve tabiat tatilleri (Kamp, doğa vb.)
+","Termal/Kaplıca tatilleri
+","Kültürel tatiller (Antik kent, ören yeri, farklı ülke şehir/mutfak kültürleri vb.)
+","Deniz turu tatili (Gemi turu, tekne gezileri vb.)
+","Memleket/akraba tatili
+","Diğer","Evde veya şehir içinde farklı aktiviteler
+"),
+
+  yüzde = c(68.2539683 , 6.6666667 , 0.3174603 , 0.6349206 , 0.3174603 , 0.6349206 ,20.6349206 , 0.6349206 , 1.9047619)
+)
+```
+
+```{r}
+ggplot(data = df2, aes(x = yüzde, y = Kategori)) +
+  geom_point() +
+  labs(title = "      Sancaktepe ", x = " Yüzde (%)", y = "Tatil Seçimi")
+```
+
+Toplam kategori sayıları
+
+```{r}
+g <-sum(a$`Hiç tatil yapmıyorum`)
+h<-sum(a$`Memleket/akraba tatili`)
+j<-sum(a$`Kıyı kesimlerinde eğlenceye yönelik tatiller`)
+k<-sum(a$`Doğa ve tabiat tatilleri (Kamp, doğa vb.)`)
+l<-sum(a$`Termal/Kaplıca tatilleri`)
+m<-sum(a$`Kültürel tatiller (Antik kent, ören yeri, farklı ülke şehir/mutfak kültürleri vb.)`)
+n<-sum(a$`Deniz turu tatili (Gemi turu, tekne gezileri vb.)`)
+x<-sum(a$Diğer)
+z<-sum(a$`Evde veya şehir içinde farklı aktiviteler`)
+
+
+```
+
+Toplam gözlem sayısı
+
+```{r}
+Top_gözlem<-sum(a$Toplam)
+```
+
+İstanbul geneli yüzdeler
+
+```{r}
+Hiç_tatil_yapmıyorum<-(g/Top_gözlem)*100
+Memleket_akraba_tatili<-(h/Top_gözlem)*100
+Kıyı_kesımlerınde_eglenceye_yönelik_tatıller<-(j/Top_gözlem)*100
+Doğa_ve_tabiat_tatilleri<-(k/Top_gözlem)*100
+Termal_Kaplıca_tatilleri<-(l/Top_gözlem)*100
+Kültürel_tatiller<-(m/Top_gözlem)*100
+Deniz_turu_tatili<-(n/Top_gözlem)*100
+Diğer<-(x/Top_gözlem)*100
+Evde_veya_şehir_içinde_farklı_aktiviteler<-(z/Top_gözlem)*100
+
+
+```
+
+```{r}
+df3 <- data.frame(
+  Kategori = c("Hiç tatil yapmıyorum","Kıyı kesimlerinde eğlenceye yönelik tatiller","Doğa ve tabiat tatilleri (Kamp, doğa vb.)
+","Termal/Kaplıca tatilleri
+","Kültürel tatiller (Antik kent, ören yeri, farklı ülke şehir/mutfak kültürleri vb.)
+","Deniz turu tatili (Gemi turu, tekne gezileri vb.)
+","Memleket/akraba tatili
+","Diğer","Evde veya şehir içinde farklı aktiviteler
+"),
+
+  yüzde = c(28.54223 , 15.34911 , 21.84348 , 8.584427 , 4.859234 , 3.797719 ,5.347135 , 8.142678 , 3.560361)
+)
+```
+
+```{r}
+ggplot(df3, aes(x = "", y = yüzde, fill = Kategori)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(fill = "", title = "     İstanbul Geneli Tatil Seçim Dağılımı")
+```
+
+Regresyon analizi
+
+P değeri anlamlı çıksada r kare oldukça düşük anlamsız bir model.
+
+```{r}
+d<-Top.veri$`Memleket/akraba tatili`
+  f<-Top.veri$Diğer
+model<-lm(f~ d)
+summary(model)
+
+```
+
+Rastgele verilerin %10 kısmını NA yapma
+
+```{r}
+for (sutun in names(a)) {
+
+set.seed(123)
+
+na_indexes <- sample(1:nrow(a), size = round(0.1 * nrow(a)))
+
+a[na_indexes, sutun] <-NA
+
+}
+
+View(a)
+```
+
+Eksik veri olduğunu söyler
+
+```{r}
+any(is.na(a))
+
+```
+
+Eksik değer sayısı
+
+```{r}
+sum(is.na(a))
+```
+
+```{r}
+
+library(naniar)
+gg_miss_var(a)
+```
+
+```{r}
+library(Amelia)
+Amelia::missmap(a)
+```
+
+Ortalamaya göre eksik veri doldurma
+
+```{r}
+
+a <- a %>%
+  mutate(across(everything(), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+```
+
+Yuvarlama
+
+```{r}
+a<-round(a)
+V
+```
+
+Orjinal veri ile karşılaştırdığımızda yöntemin başarılı olduğu söylenebilir.
